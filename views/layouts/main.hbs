@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{title}} - Instagram Clone</title>
+  <link rel="stylesheet" href="/styles/style.css">
+  <script src="https://cdn.tailwindcss.com"></script> <!-- Using Tailwind CDN for quick prototype styling -->
+</head>
+<body class="bg-gray-50 text-gray-900 font-sans pb-10">
+  
+  <nav class="bg-white border-b border-gray-300 sticky top-0 z-50">
+    <div class="max-w-4xl mx-auto flex justify-between items-center p-4">
+      <h1 class="text-xl font-bold italic">Instagram Clone</h1>
+      <div class="space-x-4">
+        <a href="/feed" class="hover:text-blue-500 font-semibold">Home</a>
+        <a href="/users" class="hover:text-blue-500 font-semibold">Users</a>
+        <a href="/chats" class="hover:text-blue-500 font-semibold">Chats</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Global Socket Notification Banner / Toast -->
+  <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2"></div>
+
+  <main class="max-w-4xl mx-auto p-4 mt-4">
+    {{{body}}}
+  </main>
+
+  <!-- Socket.io Client Implementation -->
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    const toastContainer = document.getElementById('toast-container');
+
+    // Colour map per event type
+    const toastStyles = {
+      new_post:    'bg-indigo-600',
+      new_user:    'bg-emerald-600',
+      new_like:    'bg-rose-500',
+      new_message: 'bg-sky-600',
+    };
+
+    function showToast(message, eventType) {
+      const colour = toastStyles[eventType] || 'bg-gray-700';
+      const toast = document.createElement('div');
+      toast.className = `${colour} text-white px-4 py-3 rounded-lg shadow-lg font-medium transition-all duration-300 opacity-100`;
+      toast.textContent = message;
+      toastContainer.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300);
+      }, 5000);
+    }
+
+    // ── New post: toast + live feed prepend ───────────────────────────────────
+    socket.on('new_post', (data) => {
+      showToast(data.message, 'new_post');
+      const feed = document.getElementById('feed-container');
+      if (feed && data.html) {
+        const wrapper = document.createElement('div');
+        wrapper.innerHTML = data.html.trim();
+        const card = wrapper.firstChild;
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(-16px)';
+        feed.prepend(card);
+        // Animate in
+        requestAnimationFrame(() => {
+          card.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+          card.style.opacity = '1';
+          card.style.transform = 'translateY(0)';
+        });
+      }
+    });
+
+    // ── New user ──────────────────────────────────────────────────────────────
+    socket.on('new_user', (data) => {
+      showToast(data.message, 'new_user');
+    });
+
+    // ── New like ──────────────────────────────────────────────────────────────
+    socket.on('new_like', (data) => {
+      showToast(data.message, 'new_like');
+    });
+
+    // ── New message ───────────────────────────────────────────────────────────
+    socket.on('new_message', (data) => {
+      showToast(data.message, 'new_message');
+    });
+  </script>
+</body>
+</html>

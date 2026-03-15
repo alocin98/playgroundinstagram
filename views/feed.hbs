@@ -1,0 +1,36 @@
+<div id="feed-container" class="flex flex-col gap-6 max-w-xl mx-auto">
+  <h2 class="text-2xl font-bold mb-4">Live Feed</h2>
+
+  {{#each posts}}
+  <article class="bg-white border border-gray-300 rounded-lg overflow-hidden shadow-sm" data-post-id="{{this.id}}">
+    <div class="flex items-center justify-between p-3 border-b border-gray-100">
+      <div class="flex items-center">
+        <img src="{{this.profile_pic}}" alt="{{this.username}}" class="h-8 w-8 rounded-full mr-3 object-cover">
+        <span class="font-bold text-sm">{{this.username}}</span>
+      </div>
+      {{#if this.location}}
+      <span class="text-xs text-gray-500">{{this.location}}</span>
+      {{/if}}
+    </div>
+    
+    <div class="bg-gray-100 aspect-square flex items-center justify-center overflow-hidden">
+      {{#if this.image_url}}
+        <img src="{{this.image_url}}" alt="Post image" class="object-cover w-full h-full">
+      {{else}}
+        <span class="text-gray-400">No Image provided</span>
+      {{/if}}
+    </div>
+    
+    <div class="p-4">
+      <div class="flex gap-4 mb-2">
+        <button class="font-bold cursor-pointer hover:text-red-500 transition-colors">♥ Like</button>
+        <button class="font-bold cursor-pointer hover:text-blue-500 transition-colors">💬 Comment</button>
+      </div>
+      <p class="font-bold text-sm mb-1">{{this.likes}} likes</p>
+      <p class="text-sm"><span class="font-bold mr-2">{{this.username}}</span>{{this.description}}</p>
+    </div>
+  </article>
+  {{else}}
+    <p class="text-gray-500 text-center py-10">No posts found in the database.</p>
+  {{/each}}
+</div>

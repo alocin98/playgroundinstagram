@@ -1,0 +1,18 @@
+<div class="max-w-md mx-auto">
+  <h2 class="text-2xl font-bold mb-6">Users</h2>
+  
+  <ul class="flex flex-col gap-4">
+    {{#each users}}
+    <li class="flex items-center p-3 bg-white border border-gray-200 rounded-lg shadow-sm">
+      <img src="{{this.profile_pic}}" alt="{{this.username}}" class="h-12 w-12 rounded-full mr-4 flex-shrink-0 object-cover">
+      <div class="flex-grow">
+        <p class="font-bold">{{this.username}}</p>
+        <p class="text-sm text-gray-500">{{this.email}}</p>
+      </div>
+      <button class="bg-blue-500 text-white px-4 py-1 rounded-md font-semibold text-sm hover:bg-blue-600 transition-colors">Follow</button>
+    </li>
+    {{else}}
+      <p class="text-gray-500 text-center py-10">No users found in the database.</p>
+    {{/each}}
+  </ul>
+</div>

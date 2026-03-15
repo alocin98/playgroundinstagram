@@ -1,0 +1,124 @@
+<div class="flex h-[calc(100vh-120px)] border border-gray-300 rounded-lg overflow-hidden bg-white shadow-sm">
+
+  <!-- Sidebar: one row per receiver -->
+  <div class="w-1/3 border-r border-gray-200 flex flex-col">
+    <div class="p-4 border-b border-gray-200 font-bold text-lg">Chats</div>
+    <div class="flex-1 overflow-y-auto" id="receiver-list">
+
+      {{#each receivers}}
+      <div
+        class="receiver-row p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer flex items-center gap-3 transition-colors"
+        onclick="selectReceiver(this)"
+        data-receiver-name="{{this.receiver_name}}"
+        data-receiver-pic="{{this.receiver_pic}}"
+        data-index="{{@index}}"
+      >
+        {{#if this.receiver_pic}}
+          <img src="{{this.receiver_pic}}" alt="{{this.receiver_name}}"
+               class="h-10 w-10 rounded-full flex-shrink-0 object-cover">
+        {{else}}
+          <div class="h-10 w-10 rounded-full flex-shrink-0 bg-gray-200 flex items-center justify-center text-gray-500 font-bold text-sm">
+            {{substring this.receiver_name 0 1}}
+          </div>
+        {{/if}}
+        <div class="min-w-0">
+          <p class="font-bold text-sm">{{this.receiver_name}}</p>
+          <p class="text-xs text-gray-400">
+            {{this.messages.length}} message{{#if (gt this.messages.length 1)}}s{{/if}}
+          </p>
+        </div>
+      </div>
+      {{else}}
+        <p class="text-sm text-gray-500 p-4">No recent messages.</p>
+      {{/each}}
+
+    </div>
+  </div>
+
+  <!-- Chat area -->
+  <div class="flex-1 flex flex-col overflow-hidden">
+
+    <!-- Empty state -->
+    <div id="detail-empty" class="flex-1 flex flex-col items-center justify-center text-gray-400 gap-2">
+      <svg class="h-12 w-12 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+              d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+      </svg>
+      <p class="text-sm">Select a chat to see the messages</p>
+    </div>
+
+    <!-- Receiver detail view -->
+    <div id="detail-view" class="hidden flex-1 flex flex-col overflow-hidden">
+      <!-- Header -->
+      <div class="p-4 border-b border-gray-200 bg-white flex items-center gap-3 flex-shrink-0">
+        <img id="detail-pic" src="" alt="" class="h-9 w-9 rounded-full object-cover hidden">
+        <div id="detail-pic-placeholder"
+             class="h-9 w-9 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 font-bold text-sm hidden">
+        </div>
+        <div>
+          <p id="detail-name" class="font-bold text-sm"></p>
+          <p class="text-xs text-gray-400">received messages</p>
+        </div>
+      </div>
+
+      <!-- Message thread -->
+      <div id="message-thread" class="flex-1 overflow-y-auto bg-gray-50 p-4 flex flex-col gap-3">
+        <!-- Messages injected by JS -->
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Embed receivers data for JS -->
+<script>
+  const receiversData = {{{receiversJson}}};
+
+  function selectReceiver(row) {
+    // Highlight selected row
+    document.querySelectorAll('.receiver-row').forEach(r => r.classList.remove('bg-indigo-50'));
+    row.classList.add('bg-indigo-50');
+
+    const idx  = parseInt(row.dataset.index, 10);
+    const name = row.dataset.receiverName;
+    const pic  = row.dataset.receiverPic;
+    const data = receiversData[idx];
+
+    // Show detail panel
+    document.getElementById('detail-empty').classList.add('hidden');
+    document.getElementById('detail-view').classList.remove('hidden');
+
+    // Set header
+    document.getElementById('detail-name').textContent = name;
+    const imgEl = document.getElementById('detail-pic');
+    const placeholder = document.getElementById('detail-pic-placeholder');
+    if (pic) {
+      imgEl.src = pic; imgEl.alt = name;
+      imgEl.classList.remove('hidden');
+      placeholder.classList.add('hidden');
+    } else {
+      placeholder.textContent = name.charAt(0).toUpperCase();
+      placeholder.classList.remove('hidden');
+      imgEl.classList.add('hidden');
+    }
+
+    // Render messages
+    const thread = document.getElementById('message-thread');
+    thread.innerHTML = '';
+    for (const msg of data.messages) {
+      const bubble = document.createElement('div');
+      bubble.className = 'bg-white border border-gray-200 rounded-2xl px-4 py-3 max-w-[80%] shadow-sm flex flex-col gap-1';
+      bubble.innerHTML = `
+        <div class="flex items-center gap-2">
+          ${msg.sender_pic
+            ? `<img src="${msg.sender_pic}" alt="${msg.sender_name}" class="h-6 w-6 rounded-full object-cover flex-shrink-0">`
+            : `<div class="h-6 w-6 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-xs flex-shrink-0">${msg.sender_name.charAt(0).toUpperCase()}</div>`
+          }
+          <span class="text-xs font-semibold text-gray-500">${msg.sender_name}</span>
+        </div>
+        <span class="text-sm text-gray-800">${msg.message}</span>
+      `;
+      thread.appendChild(bubble);
+    }
+  }
+</script>
