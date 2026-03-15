@@ -193,13 +193,34 @@ async function pollDatabase() {
 // ─── Handlebars Routes ────────────────────────────────────────────────────────
 app.get('/feed', async (req, res) => {
   try {
-    const result = await pool.query(`
-      SELECT posts.*, users.username, users.profile_pic 
-      FROM posts 
-      JOIN users ON posts.user_id = users.id 
-      ORDER BY posts.id DESC
-    `);
-    res.render('feed', { layout: 'layouts/main', title: 'Live Feed', posts: result.rows });
+    const [postsRes, commentsRes] = await Promise.all([
+      pool.query(`
+        SELECT posts.*, users.username, users.profile_pic
+        FROM posts
+        JOIN users ON posts.user_id = users.id
+        ORDER BY posts.id DESC
+      `),
+      pool.query(`
+        SELECT c.id, c.post_id, c.content, u.username
+        FROM comments c
+        LEFT JOIN users u ON c.user_id = u.id
+        ORDER BY c.id ASC
+      `),
+    ]);
+
+    // Group comments by post_id
+    const commentsByPost = {};
+    for (const c of commentsRes.rows) {
+      if (!commentsByPost[c.post_id]) commentsByPost[c.post_id] = [];
+      commentsByPost[c.post_id].push({ id: c.id, content: c.content, username: c.username || 'unknown' });
+    }
+
+    const posts = postsRes.rows.map(post => ({
+      ...post,
+      comments: commentsByPost[post.id] || [],
+    }));
+
+    res.render('feed', { layout: 'layouts/main', title: 'Live Feed', posts });
   } catch (err) {
     console.error(err);
     res.status(500).send('Database Error');

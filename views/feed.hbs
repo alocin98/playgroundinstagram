@@ -12,7 +12,7 @@
       <span class="text-xs text-gray-500">{{this.location}}</span>
       {{/if}}
     </div>
-    
+
     <div class="bg-gray-100 aspect-square flex items-center justify-center overflow-hidden">
       {{#if this.image_url}}
         <img src="{{this.image_url}}" alt="Post image" class="object-cover w-full h-full">
@@ -20,7 +20,7 @@
         <span class="text-gray-400">No Image provided</span>
       {{/if}}
     </div>
-    
+
     <div class="p-4">
       <div class="flex gap-4 mb-2">
         <button class="font-bold cursor-pointer hover:text-red-500 transition-colors">♥ Like</button>
@@ -28,9 +28,30 @@
       </div>
       <p class="font-bold text-sm mb-1">{{this.likes}} likes</p>
       <p class="text-sm"><span class="font-bold mr-2">{{this.username}}</span>{{this.description}}</p>
+
+      {{!-- Collapsible comments section --}}
+      <details class="mt-3 border-t border-gray-100 pt-3" open>
+        <summary class="text-sm text-gray-500 cursor-pointer select-none hover:text-gray-700 transition-colors list-none flex items-center gap-1">
+          <span class="chevron text-xs">▾</span>
+          <span>{{this.comments.length}} comment{{#if (gt this.comments.length 1)}}s{{/if}}</span>
+        </summary>
+        <div class="mt-2 flex flex-col gap-2">
+          {{#each this.comments}}
+          <p class="text-sm"><span class="font-bold mr-1">{{this.username}}</span>{{this.content}}</p>
+          {{else}}
+          <p class="text-sm text-gray-400 italic">No comments yet.</p>
+          {{/each}}
+        </div>
+      </details>
     </div>
   </article>
   {{else}}
     <p class="text-gray-500 text-center py-10">No posts found in the database.</p>
   {{/each}}
 </div>
+
+<style>
+  details[open] .chevron { transform: rotate(0deg); }
+  details:not([open]) .chevron { transform: rotate(-90deg); }
+  .chevron { display: inline-block; transition: transform 0.2s ease; }
+</style>
