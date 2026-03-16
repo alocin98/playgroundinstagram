@@ -85,8 +85,12 @@ function buildPostCard(post) {
       <div class="flex items-center">
         <img src="${pic}" alt="${post.username}" class="h-8 w-8 rounded-full mr-3 object-cover">
         <span class="font-bold text-sm">${post.username}</span>
+        <span class="ml-2 text-xs font-mono bg-purple-100 text-purple-600 px-1.5 py-0.5 rounded" title="User ID">user id: ${post.user_id}</span>
       </div>
-      ${loc}
+      <div class="flex items-center gap-2">
+        ${loc}
+        <span class="text-xs font-mono bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded" title="Post ID">post id: ${post.id}</span>
+      </div>
     </div>
     <div class="bg-gray-100 aspect-square flex items-center justify-center overflow-hidden">
       ${img}
@@ -198,13 +202,13 @@ app.get('/feed', async (req, res) => {
         SELECT posts.*, users.username, users.profile_pic
         FROM posts
         JOIN users ON posts.user_id = users.id
-        ORDER BY posts.id DESC
+        ORDER BY posts.created_at DESC
       `),
       pool.query(`
         SELECT c.id, c.post_id, c.content, u.username
         FROM comments c
         LEFT JOIN users u ON c.user_id = u.id
-        ORDER BY c.id ASC
+        ORDER BY c.created_at ASC
       `),
     ]);
 
@@ -229,7 +233,7 @@ app.get('/feed', async (req, res) => {
 
 app.get('/users', async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM users ORDER BY id ASC');
+    const result = await pool.query('SELECT * FROM users ORDER BY created_at DESC');
     res.render('users', { layout: 'layouts/main', title: 'Users', users: result.rows });
   } catch (err) {
     console.error(err);
@@ -249,7 +253,7 @@ app.get('/chats', async (req, res) => {
       FROM messages m
       JOIN users AS sender        ON m.sender_id   = sender.id
       LEFT JOIN users AS receiver ON m.receiver_id = receiver.id
-      ORDER BY m.id ASC
+      ORDER BY m.created_at ASC
     `);
 
     // Group messages by receiver
@@ -269,12 +273,13 @@ app.get('/chats', async (req, res) => {
         message:     row.message,
         sender_name: row.sender_name,
         sender_pic:  row.sender_pic,
+        created_at:  row.created_at,
       });
     }
 
-    // Convert to array; newest activity first (highest message id last)
+    // Convert to array; newest activity first (by latest message created_at)
     const receivers = [...receiverMap.values()].sort(
-      (a, b) => b.messages[b.messages.length - 1].id - a.messages[a.messages.length - 1].id
+      (a, b) => new Date(b.messages[b.messages.length - 1].created_at) - new Date(a.messages[a.messages.length - 1].created_at)
     );
 
     res.render('chats', {

@@ -6,7 +6,10 @@
     <li class="flex items-center p-3 bg-white border border-gray-200 rounded-lg shadow-sm">
       <img src="{{this.profile_pic}}" alt="{{this.username}}" class="h-12 w-12 rounded-full mr-4 flex-shrink-0 object-cover">
       <div class="flex-grow">
-        <p class="font-bold">{{this.username}}</p>
+        <p class="font-bold flex items-center gap-2">
+          {{this.username}}
+          <span class="text-xs font-mono bg-purple-100 text-purple-600 px-1.5 py-0.5 rounded" title="User ID">user id: {{this.id}}</span>
+        </p>
         <p class="text-sm text-gray-500">{{this.email}}</p>
       </div>
       <button class="bg-blue-500 text-white px-4 py-1 rounded-md font-semibold text-sm hover:bg-blue-600 transition-colors">Follow</button>
