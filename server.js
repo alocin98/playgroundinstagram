@@ -73,7 +73,7 @@ async function initWatermarks() {
 /** Build a small HTML card for a post (used for live feed injection). */
 function buildPostCard(post) {
   const img = post.image_url
-    ? `<img src="${post.image_url}" alt="Post image" class="object-cover w-full h-full">`
+    ? `<img src="${post.image_url}" alt="Post image" class="w-full h-auto">`
     : `<span class="text-gray-400">No Image provided</span>`;
   const loc = post.location
     ? `<span class="text-xs text-gray-500">${post.location}</span>`
@@ -92,7 +92,7 @@ function buildPostCard(post) {
         <span class="text-xs font-mono bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded" title="Post ID">post id: ${post.id}</span>
       </div>
     </div>
-    <div class="bg-gray-100 aspect-square flex items-center justify-center overflow-hidden">
+    <div class="bg-gray-100 flex items-center justify-center overflow-hidden">
       ${img}
     </div>
     <div class="p-4">
